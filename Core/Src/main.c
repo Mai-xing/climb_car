@@ -27,6 +27,9 @@
 #include "motor.h"
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
+int VL,VR;
+int counter;
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -58,6 +61,49 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+typedef struct {
+    float Kp;           
+    float Ki;           
+    float Kd;           
+    float integral;     
+    float prev_error;  
+    float output;       
+    float max_output;   
+    float min_output; 
+} PID_Controller;
+
+void PID_Init(PID_Controller* pid, float Kp, float Ki, float Kd, float min_out, float max_out) {
+    pid->Kp = Kp;
+    pid->Ki = Ki;
+    pid->Kd = Kd;
+    pid->integral = 0;
+    pid->prev_error = 0;
+    pid->output = 0;
+    pid->min_output = min_out;
+    pid->max_output = max_out;
+}
+
+float PID_Update(PID_Controller* pid, float error, float dt) {
+    if(fabs(error) > 0.1) 
+		{ 
+        pid->integral += error * dt;
+    }
+    float derivative = (error - pid->prev_error) / dt;
+    
+    pid->output = pid->Kp * error + 
+                 pid->Ki * pid->integral + 
+                 pid->Kd * derivative;
+    
+    if(pid->output > pid->max_output) pid->output = pid->max_output;
+    if(pid->output < pid->min_output) pid->output = pid->min_output;
+    
+    pid->prev_error = error;
+    
+    return pid->output;
+}
+
+
+
 void servo( int angle)
 {
 	int duty;
@@ -70,6 +116,10 @@ float speed(int num)
 	
 	float v;
 	v=num*16.2;
+	if(num>600)
+	{
+		v=0;
+	}
 	return v;
 }
 
@@ -118,7 +168,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-	int VL,VR;
+	
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -130,20 +180,20 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_TIM2_Init();
   MX_USART1_UART_Init();
   MX_TIM3_Init();
   MX_TIM4_Init();
   MX_TIM5_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 	
-	HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_1);
-	HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_2);
+	HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_3);
+	HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_4);
 	HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_1);
-	HAL_TIM_Base_Start_IT(&htim3);
+	HAL_TIM_Base_Start_IT(&htim3); 
 	HAL_TIM_Encoder_Start(&htim4,TIM_CHANNEL_ALL);
 	HAL_TIM_Encoder_Start(&htim5,TIM_CHANNEL_ALL);
-	int counter;
+	
 	char message[20];
 	
 	
@@ -157,11 +207,12 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-		//servo(60);
-		go_ahead(500,500);
-		VL=speed(NL);
+		servo(90);
+		go_ahead(0,0);
+		VL=(int)speed(NL);
+		VR=speed(NR);
 		counter = __HAL_TIM_GET_COUNTER(&htim4);
-		sprintf(message,"counter:%d\n",VL);
+		sprintf(message,"L:%d,R:%d\n",VL,VR);
 		HAL_UART_Transmit_IT(&huart1,(uint8_t*)message,strlen(message));
 		HAL_Delay(99);
 	

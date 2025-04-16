@@ -10,12 +10,12 @@ void go_ahead(int speedA,int speedB)
 		speedA=0;
 	else if(speedA>1000)
 		speedA=1000;	
-	__HAL_TIM_SET_COMPARE(&htim2,TIM_CHANNEL_1,speedA);
+	__HAL_TIM_SET_COMPARE(&htim2,TIM_CHANNEL_3,speedA);
 	if(speedB<0)
 		speedB=0;
 	else if(speedB>1000)
 		speedB=1000;	
-	__HAL_TIM_SET_COMPARE(&htim2,TIM_CHANNEL_2,speedB);
+	__HAL_TIM_SET_COMPARE(&htim2,TIM_CHANNEL_4,speedB);
 }
 
 

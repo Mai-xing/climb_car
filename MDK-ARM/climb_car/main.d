@@ -37,3 +37,4 @@ climb_car\main.o: ../Core/Inc/gpio.h
 climb_car\main.o: ../hardware/motor.h
 climb_car\main.o: D:\keil5\Keil5 MDK\ARM\ARMCC\Bin\..\include\stdio.h
 climb_car\main.o: D:\keil5\Keil5 MDK\ARM\ARMCC\Bin\..\include\string.h
+climb_car\main.o: D:\keil5\Keil5 MDK\ARM\ARMCC\Bin\..\include\math.h
